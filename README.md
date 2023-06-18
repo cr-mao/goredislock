@@ -12,7 +12,7 @@
 ### download
 
 ```shell
-go get github.com/cr-mao/goredislock@v1.0.0
+go get github.com/cr-mao/goredislock@v1.0.1
 ```
 
 ### test
