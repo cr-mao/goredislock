@@ -10,10 +10,16 @@
 
 
 ### download
+
 ```shell
 go get github.com/cr-mao/goredislock@v1.0.0
 ```
 
+### test
+
+```shell
+go test -v ./...
+````
 
 ### demo
 

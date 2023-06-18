@@ -13,14 +13,14 @@ import (
 var GlobalRedisClient *redis.Client
 var redisClientOnce sync.Once
 
-func NewRedisClient(addr string) *redis.Client {
+func NewRedisClient(addr string, db int, username, password string) *redis.Client {
 	redisClientOnce.Do(func() {
 		GlobalRedisClient = redis.NewClient(&redis.Options{
 			Network:  "tcp",
 			Addr:     addr,
-			Password: "", //密码
-			DB:       0,  // redis数据库
-
+			Password: password, //密码
+			DB:       db,       // redis数据库
+			Username: username,
 			//连接池容量及闲置连接数量
 			PoolSize:     15, // 连接池数量
 			MinIdleConns: 10, //好比最小连接数
@@ -48,4 +48,8 @@ func NewRedisClient(addr string) *redis.Client {
 		log.Println(pong)
 	})
 	return GlobalRedisClient
+}
+
+func SetGlobalRedisClient(redisClient *redis.Client) {
+	GlobalRedisClient = redisClient
 }
