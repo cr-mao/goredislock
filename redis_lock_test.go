@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/stretchr/testify/assert"
 )
 
 // 只有一个go程能获得 锁
@@ -120,4 +121,38 @@ func TestSetGlobalRedisClient(t *testing.T) {
 	locker, ok := NewLocker("test_lock_key", WithExpire(time.Second*2)).Lock()
 	defer locker.Unlock()
 	fmt.Println(ok)
+}
+
+const (
+	redisAddr = "localhost:6379"
+	testKey   = "test-lock-key"
+)
+
+func TestLocker(t *testing.T) {
+
+	// 创建 Redis 客户端
+	redisClient := NewRedisClient(redisAddr, 0, "", "")
+	defer redisClient.Close()
+
+	// 创建分布式锁
+	lock := NewLocker(testKey, WithRedisClient(redisClient))
+
+	// 获取锁并进行操作成功的情况
+	locker, ok := lock.Lock()
+	assert.True(t, ok)
+
+	// 续租锁的过程和正确续租的结果
+	time.Sleep(3 * time.Second) // 假设锁的过期时间为10秒，这里等待3秒进行续租
+	locker.resetExpire()
+
+	// 释放锁后再次获取锁成功的情况
+	locker.Unlock()
+	locker, ok = lock.Lock()
+	assert.True(t, ok)
+
+	// 获取锁失败的情况
+	otherLock := NewLocker(testKey, WithRedisClient(redisClient))
+	_, ok = otherLock.Lock()
+	assert.False(t, ok)
+
 }
